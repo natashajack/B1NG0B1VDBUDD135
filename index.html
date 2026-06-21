@@ -1,3 +1,35 @@
+<!-- ============================================================
+     BUZZWORD BINGO — standalone version for GitHub Pages + Firebase
+     STEP 1: paste your Firebase config in the firebaseConfig block below
+             (look for "PASTE YOUR FIREBASE CONFIG HERE")
+     STEP 2: save this file as index.html and upload to your repo
+     ============================================================ -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+  /* ====== PASTE YOUR FIREBASE CONFIG HERE ======
+     In the Firebase console: Project settings (gear icon) > General >
+     scroll to "Your apps" > Web app > "SDK setup and configuration" >
+     choose "Config" and copy the object. Replace the block below.
+     The databaseURL and projectId below already match your project. */
+  const firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY",
+    authDomain: "buzzword-bingo-ff4ca.firebaseapp.com",
+    databaseURL: "https://buzzword-bingo-ff4ca-default-rtdb.firebaseio.com",
+    projectId: "buzzword-bingo-ff4ca",
+    storageBucket: "buzzword-bingo-ff4ca.appspot.com",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
+  };
+  /* ============================================== */
+  firebase.initializeApp(firebaseConfig);
+  window._db = firebase.database();
+</script>
+
 <div id="root"></div>
 
 <style>
@@ -265,15 +297,20 @@
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
-/* ----------------------- storage helpers ----------------------- */
-const SHARED = true;
+/* ----------------------- storage helpers (Firebase Realtime DB) ----------------------- */
+// Rooms are stored under /rooms/{CODE}. Firebase keys can't contain . # $ [ ]
+// but our room codes only use A-Z and 2-9, so they're safe as-is.
 async function loadRoom(code){
-  try { const r = await window.storage.get('room:'+code, SHARED); return r ? JSON.parse(r.value) : null; }
-  catch(e){ return null; }
+  try {
+    const snap = await window._db.ref('rooms/'+code).get();
+    return snap.exists() ? snap.val() : null;
+  } catch(e){ console.error('loadRoom failed', e); return null; }
 }
 async function saveRoom(code, data){
-  try { await window.storage.set('room:'+code, JSON.stringify(data), SHARED); return true; }
-  catch(e){ return false; }
+  try {
+    await window._db.ref('rooms/'+code).set(data);
+    return true;
+  } catch(e){ console.error('saveRoom failed', e); return false; }
 }
 
 /* ----------------------- utilities ----------------------- */
@@ -405,6 +442,7 @@ function App(){
     if(c.length !== 4){ setErr('Room codes are 4 characters.'); return; }
     const data = await loadRoom(c);
     if(!data){ setErr('No room with that code. Check with your host.'); return; }
+    if(!data.players) data.players = {};
     data.players[meId] = { name: name.trim(), joined: Date.now(), bingoAt: null };
     data.feed = [{ t: now(), who: name.trim(), msg: 'joined the call 👋' }, ...(data.feed||[])].slice(0,40);
     await saveRoom(c, data);
@@ -508,7 +546,7 @@ function App(){
     data.title = editTitle.trim() || data.title;
     data.round = (data.round || 1) + 1;
     // reset everyone's bingo status for the new round
-    Object.keys(data.players).forEach(id=>{ data.players[id].bingoAt = null; });
+    Object.keys(data.players || {}).forEach(id=>{ data.players[id].bingoAt = null; });
     data.feed = [{ t: now(), who: data.players[meId]?.name || 'Host', msg: `revised the board — round ${data.round} 🔄` }, ...(data.feed||[])].slice(0,40);
     await saveRoom(code, data);
     setRoom(data);
@@ -576,7 +614,7 @@ function App(){
   }
 
   /* ---- GAME VIEW ---- */
-  const players = room ? Object.entries(room.players) : [];
+  const players = room ? Object.entries(room.players || {}) : [];
   const winners = players.filter(([,p])=>p.bingoAt).sort((a,b)=>a[1].bingoAt-b[1].bingoAt);
   const feed = room?.feed || [];
 
