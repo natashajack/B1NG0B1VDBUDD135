@@ -1,984 +1,5 @@
 <div id="root"></div>
-<style>
-  :root {
-    --paper: 
-#f3efe4;
-    --ink: 
-#1a2e35;
-    --teal: 
-#2b6a78;
-    --teal-deep: 
-#1d4a55;
-    --teal-tint: 
-#d7e6e9;
-    --gold: 
-#c98a2b;
-    --gold-tint: 
-#f0e0c4;
-    --stamp: 
-#b23a2e;
-    --line: 
-#c9c0ab;
-    --shadow: rgba(26,46,53,0.18);
-    --free: 
-#e8d9b8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  #root {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: var(--ink);
-    min-height: 100vh;
-    background:
-      radial-gradient(circle at 20% 10%, rgba(43,106,120,0.06), transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(201,138,43,0.06), transparent 40%),
-      var(--paper);
-    padding: 24px 16px 64px;
-  }
-  .wrap { max-width: 720px; margin: 0 auto; }
-  .mono { font-family: 'Courier New', Courier, monospace; }
-  /* ---- Memo header ---- */
-  .memo-head {
-    border-bottom: 3px double var(--ink);
-    padding-bottom: 14px;
-    margin-bottom: 22px;
-  }
-  .eyebrow {
-    font-family: 'Courier New', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.32em;
-    font-size: 11px;
-    color: var(--teal);
-    margin-bottom: 8px;
-  }
-  .memo-title {
-    font-weight: 800;
-    font-size: clamp(30px, 7vw, 46px);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-  }
-  .memo-title em { font-style: normal; color: var(--gold); }
-  .memo-sub {
-    margin-top: 10px;
-    font-size: 14px;
-    color: var(--teal-deep);
-    max-width: 46ch;
-    line-height: 1.5;
-  }
-  /* ---- Cards / panels ---- */
-  .panel {
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    box-shadow: 0 1px 0 var(--line), 0 8px 24px var(--shadow);
-    padding: 22px;
-    margin-bottom: 18px;
-  }
-  .panel h2 {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    color: var(--teal);
-    margin-bottom: 4px;
-    font-family: 'Courier New', monospace;
-  }
-  .panel p.hint { font-size: 13px; color: 
-#6b6555; margin-bottom: 16px; line-height: 1.5; }
-  label.field { display:block; font-size: 12px; letter-spacing:0.08em; text-transform:uppercase; color:
-#7a7363; margin: 0 0 6px; }
-  input.text, textarea.text {
-    width: 100%;
-    font: inherit;
-    padding: 11px 13px;
-    border: 1.5px solid var(--line);
-    border-radius: 3px;
-    background: var(--paper);
-    color: var(--ink);
-    transition: border-color .15s, box-shadow .15s;
-  }
-  input.text:focus, textarea.text:focus {
-    outline: none;
-    border-color: var(--teal);
-    box-shadow: 0 0 0 3px var(--teal-tint);
-  }
-  textarea.text { resize: vertical; min-height: 150px; line-height: 1.6; }
-  .row { display:flex; gap: 12px; flex-wrap: wrap; }
-  .row > * { flex: 1; min-width: 140px; }
-  button.btn {
-    font: inherit; font-weight: 700;
-    cursor: pointer;
-    border: none;
-    border-radius: 3px;
-    padding: 12px 20px;
-    background: var(--teal);
-    color: #fff;
-    letter-spacing: 0.02em;
-    transition: transform .08s, background .15s, box-shadow .15s;
-    box-shadow: 0 2px 0 var(--teal-deep);
-  }
-  button.btn:hover { background: var(--teal-deep); }
-  button.btn:active { transform: translateY(2px); box-shadow: none; }
-  button.btn.ghost { background: transparent; color: var(--teal); box-shadow: inset 0 0 0 1.5px var(--teal); }
-  button.btn.ghost:hover { background: var(--teal-tint); }
-  button.btn.gold { background: var(--gold); box-shadow: 0 2px 0 
-#9c6a1f; }
-  button.btn.gold:hover { background: 
-#b97c24; }
-  button.btn.small { padding: 8px 14px; font-size: 13px; }
-  button.btn:disabled { opacity: .4; cursor: not-allowed; transform:none; }
-  .divider-or { text-align:center; color:
-#9a917d; font-size:12px; letter-spacing:0.25em; margin: 14px 0; text-transform:uppercase; }
-  .tabs { display:flex; gap:8px; margin-bottom: 18px; }
-  .tab {
-    flex:1; text-align:center; padding: 12px; cursor:pointer;
-    font-weight:700; font-size:13px; letter-spacing:0.04em;
-    border-radius: 4px 4px 0 0;
-    background: var(--teal-tint); color: var(--teal-deep);
-    border: 1px solid var(--line); border-bottom: none;
-  }
-  .tab.active { background:#fff; color: var(--ink); box-shadow: 0 -2px 0 var(--gold); }
-  /* ---- Room bar ---- */
-  .roombar {
-    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-    background: var(--ink); color: var(--paper);
-    border-radius: 5px; padding: 14px 18px; margin-bottom: 18px;
-  }
-  .roombar .code {
-    font-family:'Courier New',monospace; font-weight:700; font-size:22px;
-    letter-spacing: 0.3em; color: var(--gold-tint);
-  }
-  .roombar .sep { width:1px; height:30px; background: rgba(255,255,255,0.18); }
-  .roombar .meta { font-size:12px; line-height:1.4; opacity:.85; }
-  .roombar .meta b { color:#fff; }
-  .roombar .spacer { flex:1; }
-  .copybtn {
-    font: inherit; font-size:12px; cursor:pointer; border:none;
-    background: rgba(255,255,255,0.12); color:#fff; padding:7px 12px; border-radius:3px;
-  }
-  .copybtn:hover { background: rgba(255,255,255,0.22); }
-  /* ---- Bingo board ---- */
-  .board-frame {
-    background: var(--teal-deep);
-    padding: 10px;
-    border-radius: 6px;
-    box-shadow: 0 10px 30px var(--shadow);
-  }
-  .board {
-    display:grid; grid-template-columns: repeat(5,1fr); gap: 6px;
-  }
-  .cell {
-    position: relative;
-    aspect-ratio: 1 / 1;
-    background: var(--teal-tint);
-    border: none;
-    border-radius: 3px;
-    color: var(--teal-deep);
-    font-weight: 600;
-    font-size: clamp(9px, 2.1vw, 13px);
-    line-height: 1.12;
-    padding: 4px;
-    display:flex; align-items:center; justify-content:center; text-align:center;
-    cursor: pointer; overflow:hidden;
-    transition: transform .08s, background .15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .cell:hover { background: 
-#c3dade; }
-  .cell:active { transform: scale(0.96); }
-  .cell.free {
-    background: var(--free); color: var(--gold); font-weight:800;
-    cursor: default;
-  }
-  .cell.marked {
-    background: var(--teal);
-    color: #fff;
-  }
-  .cell.marked::after {
-    content: "";
-    position:absolute; inset: 4px;
-    border: 2px solid rgba(255,255,255,0.55);
-    border-radius: 50%;
-  }
-  .cell.free.marked::after { border-color: var(--gold); }
-  .cell.win { animation: pop .4s ease; box-shadow: inset 0 0 0 3px var(--gold); }
-  @keyframes pop { 0%{transform:scale(1);} 50%{transform:scale(1.08);} 100%{transform:scale(1);} }
-  .cell-txt { position:relative; z-index:1; }
-  /* ---- Win banner ---- */
-  .banner {
-    background: var(--stamp); color: #fff; text-align:center;
-    padding: 16px; border-radius: 5px; margin-bottom: 16px;
-    font-weight: 800; letter-spacing: 0.06em; font-size: 18px;
-    border: 2px dashed rgba(255,255,255,0.5);
-  }
-  .banner small { display:block; font-weight:500; letter-spacing:0.02em; font-size:13px; opacity:.9; margin-top:4px; }
-  /* ---- Players / activity ---- */
-  .players { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
-  .pchip {
-    font-size:12px; background:var(--paper); border:1px solid var(--line);
-    padding:6px 12px; border-radius:999px; display:flex; align-items:center; gap:7px;
-  }
-  .pchip .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); }
-  .pchip.bingo { background: var(--gold-tint); border-color: var(--gold); font-weight:700; }
-  .pchip.bingo .dot { background: var(--stamp); }
-  .feed { margin-top:8px; max-height: 220px; overflow:auto; }
-  .feed-item { font-size:13px; padding:8px 0; border-bottom:1px dashed var(--line); display:flex; gap:10px; }
-  .feed-item .ts { font-family:'Courier New',monospace; color:
-#a59c87; font-size:11px; white-space:nowrap; }
-  .feed-item b { color: var(--teal-deep); }
-  .feed-empty { font-size:13px; color:
-#9a917d; padding: 12px 0; }
-  .footnote { text-align:center; font-size:11px; color:
-#a59c87; margin-top:28px; letter-spacing:0.04em; }
-  .err { color: var(--stamp); font-size:13px; margin-top:8px; }
-  .toast {
-    position: fixed; bottom: 24px; left:50%; transform:translateX(-50%);
-    background: var(--ink); color:#fff; padding:12px 20px; border-radius:5px;
-    font-size:14px; z-index:50; box-shadow:0 8px 24px var(--shadow);
-    animation: rise .3s ease;
-  }
-  @keyframes rise { from{opacity:0; transform:translate(-50%,12px);} to{opacity:1;transform:translate(-50%,0);} }
-  .small-link { background:none; border:none; color:var(--teal); font:inherit; font-size:13px; cursor:pointer; text-decoration:underline; padding:0; }
-  .modal-bg {
-    position: fixed; inset: 0; z-index: 60;
-    background: rgba(26,46,53,0.55);
-    display:flex; align-items:flex-start; justify-content:center;
-    padding: 40px 16px; overflow:auto;
-  }
-  .modal {
-    background:#fff; border:1px solid var(--line); border-radius:6px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    padding: 24px; width: 100%; max-width: 560px;
-    border-top: 4px solid var(--gold);
-  }
-  .modal h2 {
-    font-size: 13px; text-transform: uppercase; letter-spacing: 0.16em;
-    color: var(--teal); margin-bottom: 4px; font-family:'Courier New',monospace;
-  }
-  .modal .hint { font-size:13px; color:
-#6b6555; margin-bottom:16px; line-height:1.5; }
-  @media (max-width:480px){
-    .roombar .meta { display:none; }
-    .panel { padding:16px; }
-  }
-  @media (prefers-reduced-motion: reduce){
-    *, .cell.win { animation:none !important; transition:none !important; }
-  }
-</style>
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
-/* ----------------------- storage helpers ----------------------- */
-const SHARED = true;
-async function loadRoom(code){
-  try { const r = await window.storage.get('room:'+code, SHARED); return r ? JSON.parse(r.value) : null; }
-  catch(e){ return null; }
-}
-async function saveRoom(code, data){
-  try { await window.storage.set('room:'+code, JSON.stringify(data), SHARED); return true; }
-  catch(e){ return false; }
-}
-/* ----------------------- utilities ----------------------- */
-const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function makeCode(){ let s=""; for(let i=0;i<4;i++) s+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]; return s; }
-function uid(){ return Math.random().toString(36).slice(2,10); }
-function shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
-function now(){ return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
-const DEFAULT_PHRASES = [
-"Let's take this offline"
-"Circle back"
-"Synergy"
-"Move the needle"
-"Low-hanging fruit"
-"Touch base"
-"Ping me"
-"Deep dive"
-"Bandwidth"
-"Boil the ocean"
-"Drink from the firehose"
-"At the end of the day"
-"Open the kimono"
-"Run it up the flagpole"
-"Think outside the box"
-"Going forward"
-"Per my last email"
-"Quick question..."
-"Let's parking-lot that"
-"Double-click on that"
-"Net-net"
-"Hard stop at the top of the hour"
-"You're on mute"
-"Can everyone see my screen?"
-"Sorry, you go first"
-"Let's take it from the top"
-"Action items"
-"Aligning stakeholders"
-"Make it a priority"
-"Loop them in"
-"Reach out"
-"It is what it is"
-"Let's not reinvent the wheel"
-"Wearing many hats"
-"Give 110%"
-];
-// Win detection (5x5, center = index 12 free)
-function lines(){
-  const L=[];
-  for(let r=0;r<5;r++) L.push([0,1,2,3,4].map(c=>r*5+c));
-  for(let c=0;c<5;c++) L.push([0,1,2,3,4].map(r=>r*5+c));
-  L.push([0,6,12,18,24]); L.push([4,8,12,16,20]);
-  return L;
-}
-const LINES = lines();
-function checkWin(marked){
-  for(const ln of LINES){ if(ln.every(i=>marked[i])) return ln; }
-  return null;
-}
-/* ----------------------- App ----------------------- */
-function App(){
-  const [view, setView] = useState('lobby'); // lobby | game
-  const [tab, setTab] = useState('join');
-  const [name, setName] = useState('');
-  const [joinCode, setJoinCode] = useState('');
-  const [phrasesText, setPhrasesText] = useState(DEFAULT_PHRASES[0]);
-  const [roomTitle, setRoomTitle] = useState('Monday All-Hands Bingo');
-  const [err, setErr] = useState('');
-  const [code, setCode] = useState(null);
-  const [meId] = useState(uid());
-  const [room, setRoom] = useState(null);
-  const [myMarks, setMyMarks] = useState({}); // index -> true
-  const [myCells, setMyCells] = useState(null); // array of 25 strings
-  const [didWin, setDidWin] = useState(false);
-  const [winLine, setWinLine] = useState(null);
-  const [toast, setToast] = useState('');
-  const [showEdit, setShowEdit] = useState(false);
-  const [editText, setEditText] = useState('');
-  const [editTitle, setEditTitle] = useState('');
-  const [editErr, setEditErr] = useState('');
-  const seenRound = useRef(0);
-  const pollRef = useRef(null);
-  const showToast = (m) => { setToast(m); setTimeout(()=>setToast(''), 1800); };
-  /* ---- build a personal card from room phrases ---- */
-  function buildCard(phrases){
-    const pool = phrases.filter(p=>p.trim().length);
-    const picked = shuffle(pool).slice(0,24);
-    const cells = [];
-    for(let i=0;i<25;i++){
-      if(i===12) cells.push("FREE\nSPACE");
-      else cells.push(picked[i<12?i:i-1] || "—");
-    }
-    return cells;
-  }
-  /* ---- create room (host) ---- */
-  async function hostCreate(){
-    setErr('');
-    if(!name.trim()){ setErr('Add your name first.'); return; }
-    const phrases = phrasesText.split('\n').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
-    if(phrases.length < 24){ setErr(Need at least 24 phrases — you have ${phrases.length}. Add ${24-phrases.length} more.); return; }
-    let c = makeCode();
-    // avoid collision
-    for(let t=0;t<5;t++){ const ex = await loadRoom(c); if(!ex) break; c = makeCode(); }
-    const data = {
-      code: c, title: roomTitle.trim() || 'Buzzword Bingo',
-      phrases, hostId: meId, createdAt: Date.now(), round: 1,
-      players: { [meId]: { name: name.trim(), joined: Date.now(), bingoAt: null } },
-      feed: [{ t: now(), who: name.trim(), msg: 'started the meeting 📋' }]
-    };
-    await saveRoom(c, data);
-    setCode(c); setRoom(data);
-    seenRound.current = 1;
-    setMyCells(buildCard(phrases)); setMyMarks({12:true});
-    setView('game');
-  }
-  /* ---- join room ---- */
-  async function doJoin(){
-    setErr('');
-    if(!name.trim()){ setErr('Add your name first.'); return; }
-    const c = joinCode.trim().toUpperCase();
-    if(c.length !== 4){ setErr('Room codes are 4 characters.'); return; }
-    const data = await loadRoom(c);
-    if(!data){ setErr('No room with that code. Check with your host.'); return; }
-    data.players[meId] = { name: name.trim(), joined: Date.now(), bingoAt: null };
-    data.feed = [{ t: now(), who: name.trim(), msg: 'joined the call 👋' }, ...(data.feed||[])].slice(0,40);
-    await saveRoom(c, data);
-    setCode(c); setRoom(data);
-    seenRound.current = data.round || 1;
-    setMyCells(buildCard(data.phrases)); setMyMarks({12:true});
-    setView('game');
-  }
-  /* ---- polling for live updates ---- */
-  useEffect(()=>{
-    if(view!=='game' || !code) return;
-    const tick = async ()=>{
-      const data = await loadRoom(code);
-      if(data){
-        setRoom(data);
-        const r = data.round || 1;
-        if(r > seenRound.current){
-          seenRound.current = r;
-          setMyCells(buildCard(data.phrases));
-          setMyMarks({12:true}); setDidWin(false); setWinLine(null);
-          showToast('Host started a new round — fresh card dealt');
-        }
-      }
-    };
-    tick();
-    pollRef.current = setInterval(tick, 2500);
-    return ()=> clearInterval(pollRef.current);
-  }, [view, code]);
-  /* ---- toggle a cell ---- */
-  function toggleCell(i){
-    if(i===12) return;
-    setMyMarks(prev=>{
-      const next = {...prev};
-      if(next[i]) delete next[i]; else next[i]=true;
-      return next;
-    });
-  }
-  /* ---- detect win locally, announce to room ---- */
-  useEffect(()=>{
-    if(!myCells) return;
-    const arr = myCells.map((_,i)=> !!myMarks[i] || i===12);
-    const ln = checkWin(arr);
-    if(ln && !didWin){
-      setDidWin(true); setWinLine(ln);
-      announceBingo();
-    }
-    if(!ln && didWin){ setDidWin(false); setWinLine(null); }
-  }, [myMarks, myCells]);
-  async function announceBingo(){
-    const data = await loadRoom(code);
-    if(!data) return;
-    if(data.players[meId] && !data.players[meId].bingoAt){
-      data.players[meId].bingoAt = Date.now();
-      const place = Object.values(data.players).filter(p=>p.bingoAt).length;
-      data.feed = [{ t: now(), who: data.players[meId].name, msg: place===1 ? 'GOT BINGO FIRST 🏆' : got bingo (#${place}) }, ...(data.feed||[])].slice(0,40);
-      await saveRoom(code, data);
-      setRoom(data);
-    }
-  }
-  async function leave(){
-    clearInterval(pollRef.current);
-    const data = await loadRoom(code);
-    if(data && data.players[meId]){
-      const nm = data.players[meId].name;
-      delete data.players[meId];
-      data.feed = [{ t: now(), who: nm, msg: 'left the meeting 🚪' }, ...(data.feed||[])].slice(0,40);
-      await saveRoom(code, data);
-    }
-    setView('lobby'); setCode(null); setRoom(null); setMyCells(null); setMyMarks({}); setDidWin(false);
-  }
-  async function newCard(){
-    if(!room) return;
-    setMyCells(buildCard(room.phrases)); setMyMarks({12:true}); setDidWin(false); setWinLine(null);
-    // also clear my bingoAt so a fresh card can win again
-    const data = await loadRoom(code);
-    if(data && data.players[meId]){ data.players[meId].bingoAt = null; await saveRoom(code, data); setRoom(data); }
-    showToast('Fresh card dealt');
-  }
-  function openEditor(){
-    if(!room) return;
-    setEditText(room.phrases.join('\n'));
-    setEditTitle(room.title);
-    setEditErr('');
-    setShowEdit(true);
-  }
-  async function saveNewBoard(){
-    setEditErr('');
-    const phrases = editText.split('\n').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
-    if(phrases.length < 24){ setEditErr(Need at least 24 phrases — you have ${phrases.length}.); return; }
-    const data = await loadRoom(code);
-    if(!data){ setEditErr('Lost the room. Try rejoining.'); return; }
-    data.phrases = phrases;
-    data.title = editTitle.trim() || data.title;
-    data.round = (data.round || 1) + 1;
-    // reset everyone's bingo status for the new round
-    Object.keys(data.players).forEach(id=>{ data.players[id].bingoAt = null; });
-    data.feed = [{ t: now(), who: data.players[meId]?.name || 'Host', msg: revised the board — round ${data.round} 🔄 }, ...(data.feed||[])].slice(0,40);
-    await saveRoom(code, data);
-    setRoom(data);
-    // re-deal my own card immediately
-    seenRound.current = data.round;
-    setMyCells(buildCard(phrases)); setMyMarks({12:true}); setDidWin(false); setWinLine(null);
-    setShowEdit(false);
-    showToast('New board sent to everyone');
-  }
-  function copyCode(){
-    const t = code;
-    if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>showToast('Room code copied')); }
-    else showToast('Code: '+t);
-  }
-  /* =================== RENDER =================== */
-  if(view==='lobby'){
-    return (
-      <div className="wrap">
-        <div className="memo-head">
-          <div className="eyebrow">Interoffice Memo · Re: Morale</div>
-          <h1 className="memo-title">Buzzword <em>Bingo</em></h1>
-          <p className="memo-sub">A live game for the next all-hands, stand-up, or town hall. Make a card of the phrases your coworkers can't stop saying, share the room code, and quietly compete while looking very engaged.</p>
-        </div>
-        <div className="tabs">
-          <div className={"tab"+(tab==='join'?' active':'')} onClick={()=>{setTab('join');setErr('')}}>Join a Room</div>
-          <div className={"tab"+(tab==='host'?' active':'')} onClick={()=>{setTab('host');setErr('')}}>Host a Room</div>
-        </div>
-        <div className="panel">
-          <label className="field">Your name (or alias)</label>
-          <input className="text" placeholder="e.g. Definitely Working" value={name} onChange={e=>setName(e.target.value)} maxLength={24}/>
-        </div>
-        {tab==='join' ? (
-          <div className="panel">
-            <h2>Have a code?</h2>
-            <p className="hint">Your host shared a 4-letter room code. Drop it in and you'll get your own randomized card.</p>
-            <label className="field">Room code</label>
-            <input className="text mono" style={{textTransform:'uppercase',letterSpacing:'0.3em',fontWeight:700,fontSize:20}} placeholder="ABCD" value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,4))} maxLength={4}/>
-            {err && <div className="err">{err}</div>}
-            <div style={{marginTop:16}}><button className="btn" onClick={doJoin}>Join the meeting →</button></div>
-          </div>
-        ) : (
-          <div className="panel">
-            <h2>Set the agenda</h2>
-            <p className="hint">List the phrases, buzzwords, and recurring bits — one per line. Everyone gets a unique card drawn from this list, so the more you add the better. Minimum 24.</p>
-            <label className="field">Game title</label>
-            <input className="text" value={roomTitle} onChange={e=>setRoomTitle(e.target.value)} maxLength={48} style={{marginBottom:16}}/>
-            <label className="field">Phrases · one per line</label>
-            <textarea className="text" value={phrasesText} onChange={e=>setPhrasesText(e.target.value)} spellCheck={false}/>
-            <div style={{fontSize:12,color:'
-#9a917d',marginTop:6}}>{phrasesText.split('\n').filter(s=>s.trim()).length} lines</div>
-            {err && <div className="err">{err}</div>}
-            <div style={{marginTop:16,display:'flex',gap:10,flexWrap:'wrap'}}>
-              <button className="btn gold" onClick={hostCreate}>Open the room →</button>
-              <button className="btn ghost small" onClick={()=>setPhrasesText(DEFAULT_PHRASES[0])}>Reset to classics</button>
-            </div>
-          </div>
-        )}
-        <div className="footnote">Up to 15 players · cards update live · keep this tab open during the meeting</div>
-      </div>
-    );
-  }
-  /* ---- GAME VIEW ---- */
-  const players = room ? Object.entries(room.players) : [];
-  const winners = players.filter(([,p])=>p.bingoAt).sort((a,b)=>a[1].bingoAt-b[1].bingoAt);
-  const feed = room?.feed || [];
-  return (
-    <div className="wrap">
-      <div className="memo-head" style={{marginBottom:16}}>
-        <div className="eyebrow">Now in session</div>
-        <h1 className="memo-title" style={{fontSize:'clamp(24px,5vw,34px)'}}>{room?.title || 'Buzzword Bingo'}</h1>
-      </div>
-      <div className="roombar">
-        <div>
-          <div style={{fontSize:10,letterSpacing:'0.25em',opacity:.7,textTransform:'uppercase'}}>Room</div>
-          <div className="code">{code}</div>
-        </div>
-        <div className="sep"></div>
-        <div className="meta"><b>{players.length}</b> / 15 present<br/><b>{winners.length}</b> bingo{winners.length!==1?'s':''} so far</div>
-        <div className="spacer"></div>
-        <button className="copybtn" onClick={copyCode}>Copy code</button>
-        <button className="copybtn" onClick={leave}>Leave</button>
-      </div>
-      {didWin && (
-        <div className="banner">
-          BINGO — looking very engaged 🏆
-          <small>{winners.length>1 ? You're #${winners.findIndex(([id])=>id===meId)+1} to call it. : 'First one to call it. Act surprised.'}</small>
-        </div>
-      )}
-      <div className="board-frame">
-        <div className="board">
-          {myCells && myCells.map((txt,i)=>{
-            const marked = !!myMarks[i] || i===12;
-            const free = i===12;
-            const isWin = winLine && winLine.includes(i);
-            return (
-              <button key={i}
-                className={"cell"+(free?' free':'')+(marked?' marked':'')+(isWin?' win':'')}
-                onClick={()=>toggleCell(i)}
-                aria-pressed={marked}
-                title={txt.replace('\n',' ')}>
-                <span className="cell-txt">{txt.split('\n').map((l,k)=><div key={k}>{l}</div>)}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-      <div style={{display:'flex',gap:10,marginTop:14,flexWrap:'wrap'}}>
-        <button className="btn ghost small" onClick={newCard}>Deal me a new card</button>
-        {room && room.hostId===meId && <button className="btn gold small" onClick={openEditor}>Edit the board</button>}
-        <div style={{flex:1}}></div>
-        <span style={{fontSize:12,color:'
-#9a917d',alignSelf:'center'}}>Tap a square when you hear it</span>
-      </div>
-      <div className="panel" style={{marginTop:18}}>
-        <h2>In the room</h2>
-        <div className="players">
-          {players.length===0 && <span style={{fontSize:13,color:'
-#9a917d'}}>Just you so far.</span>}
-          {players.map(([id,p])=>(
-            <span key={id} className={"pchip"+(p.bingoAt?' bingo':'')}>
-              <span className="dot"></span>{p.name}{id===meId?' (you)':''}{p.bingoAt?' · BINGO':''}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="panel">
-        <h2>Meeting minutes</h2>
-        <div className="feed">
-          {feed.length===0 && <div className="feed-empty">Nothing's happened yet. Suspiciously quiet.</div>}
-          {feed.map((f,i)=>(
-            <div key={i} className="feed-item">
-              <span className="ts">{f.t}</span>
-              <span><b>{f.who}</b> {f.msg}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="footnote">Updates every few seconds · share code <b>{code}</b> to add players</div>
-      {showEdit && (
-        <div className="modal-bg" onClick={(e)=>{ if(e.target.className==='modal-bg') setShowEdit(false); }}>
-          <div className="modal">
-            <h2>Revise the board</h2>
-            <p className="hint">Rewrite the phrases and everyone gets re-dealt a fresh card the moment you save. Bingo counts reset for the new round. One phrase per line, minimum 24.</p>
-            <label className="field">Game title</label>
-            <input className="text" value={editTitle} onChange={e=>setEditTitle(e.target.value)} maxLength={48} style={{marginBottom:16}}/>
-            <label className="field">Phrases · one per line</label>
-            <textarea className="text" value={editText} onChange={e=>setEditText(e.target.value)} spellCheck={false}/>
-            <div style={{fontSize:12,color:'
-#9a917d',marginTop:6}}>{editText.split('\n').filter(s=>s.trim()).length} lines</div>
-            {editErr && <div className="err">{editErr}</div>}
-            <div style={{marginTop:16,display:'flex',gap:10,flexWrap:'wrap'}}>
-              <button className="btn gold" onClick={saveNewBoard}>Send new board to everyone →</button>
-              <button className="btn ghost small" onClick={()=>setShowEdit(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {toast && <div className="toast">{toast}</div>}
-    </div>
-  );
-}
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
-</script>
 
-Show more
-33 minutes ago
-
-Thought process
-Thought process
-Got it — the folder was empty, so this index is the whole app. It uses a platform-injected window.storage for sync; I'll swap that layer for Firebase Realtime Database (and upgrade the 2.5s polling to true real-time listeners), package it as a standalone index.html that runs on GitHub Pages, and give you the Firebase + deploy steps.
-
-
-Used 5 tools, loaded tools
-Used 5 tools, loaded tools
-Now writing the full standalone index.html with the Firebase rewrite:
-
-
-Used 3 tools, created a file
-Used 3 tools, created a file
-Now verifying — checking that no window.storage remains, the JSX transpiles cleanly, and braces/structure are sound:
-
-
-Ran a command
-Ran a command
-The only window.storage match is in a comment. Now let me confirm the JSX actually transpiles with Babel (catches any syntax error):
-
-
-Ran a command
-Ran a command
-Registry's blocked. Let me grab Babel standalone (the exact build the browser uses) from the CDN and transpile with it in Node:
-
-
-Ran a command
-Ran a command
-Network's locked down so I can't pull Babel in. Let me run a proper string/comment/template-aware bracket-balance check in Python instead:
-
-
-Ran a command
-Ran a command
-My checker mishandles template-literal ${...} re-entry. Let me fix the checker (track state stack) and rerun:
-
-
-Ran a command
-Ran a command
-Let me look at line 220 of the extracted JSX to see what's actually there:
-
-
-Ran a command
-Ran a command
-That's a false positive — my checker doesn't understand regex literals like /^["']|["']$/g (the original code's quote-stripping regex). Let me neutralize regex literals and rerun:
-
-
-Ran 2 commands
-Ran 2 commands
-The bracket checker can't parse JSX itself (the {...} expression slots and tag syntax), so line 376 is another false positive — meanwhile the container-tag balance is perfect (div 49/49, span 7/7, button 10/10; input/textarea are self-closing leaves). Let me look for a real JSX-capable transpiler already on the box:
-
-
-Ran a command
-Ran a command
-esbuild is available (bundled with tsx). It transpiles JSX — let me run it as a real syntax check:
-
-
-Ran 2 commands
-Ran 2 commands
-Clean transpile and syntax check pass — the JSX is valid and the earlier failures were just my checker not understanding JSX/regex. Build verified.
-
-
-Used 2 tools
-Used 2 tools
-Now the setup guide with the exact Firebase + GitHub Pages steps and the security rules to paste:
-
-
-Created a file, read a file, used a tool
-Created a file, read a file, used a tool
-Done. The folder was empty, so the index you pasted was the whole app — I rewrote its sync layer and saved two files to your Blizzard Video folder.
-
-index.html — standalone, runs straight on GitHub Pages (React + Babel + Firebase loaded from CDN, no build step). What changed:
-
-window.storage → Firebase Realtime Database at /rooms/<CODE>.
-2.5s polling → real-time .on('value') listener, so cards/feed update instantly.
-Joins, leaves, bingos, and "new card" write only their own path instead of rewriting the whole room, so simultaneous players can't clobber each other; bingo uses a transaction to avoid duplicate announcements.
-Until you paste your config, it shows a friendly "one step left" screen instead of erroring.
-I verified it: esbuild transpiled the JSX and node --check passed clean.
-
-SETUP.md — exact click-path for both halves. Firebase: create project → Realtime Database (not Firestore) → copy the web config into the firebaseConfig block at the top of index.html → publish the security rules I included. GitHub Pages: new public repo → upload index.html → Settings → Pages → deploy from main / root.
-
-Two things worth flagging: the Firebase keys are meant to be public in the page (access is controlled by the database rules, not key secrecy), and the rules I gave allow open anonymous play — right for a casual office game, but no login. Auth can be added later if you want it.
-
-I can't log into GitHub or Firebase for you, but once you've created the accounts: paste the config values back here and I'll confirm they're slotted correctly, and when the repo's up I can walk the Pages settings with you in the browser. Want me to do a final check on the config once you've pasted it in?
-
-
-C:\Users\natas\Claude\Projects\Blizzard Video\index.html
-Code 
-
-C:\Users\natas\Claude\Projects\Blizzard Video\SETUP.md
-Document 
-31 minutes ago
-Uploaded image
-where I dont see it
-
-17 minutes ago
-
-Thought process
-Thought process
-You haven't created the repo for the bingo app yet — the three repos showing (testysdf, Marketingbuzzwordfun, HeroBVIDOW) are older ones, none is this game. So there's nothing to see until you make it. Two options:
-
-Make a new repo (cleanest): Click the + at the top-right of the page (next to your avatar) → New repository. Name it something like buzzword-bingo, keep it Public, and click Create repository. On the new empty repo page, use the "uploading an existing file" link and drag in index.html from your Blizzard Video folder, then Commit.
-
-Or reuse one you already have: If Marketingbuzzwordfun is meant for this, you could upload index.html into it instead — but a fresh repo keeps the URL clean.
-
-After the file's committed, go to that repo's Settings → Pages → Source: Deploy from a branch → main / root → Save, wait ~1 min, and the live URL appears.
-
-One thing before you deploy: have you created the Firebase project and pasted the config into index.html yet? If not, the uploaded page will load but show the "one step left" notice instead of the game. Want to do Firebase first, or upload to GitHub now and add the keys after?
-
-17 minutes ago
-Uploaded image
-good ?
-
-14 minutes ago
-You're on the Firebase project creation flow — this is the Google Analytics step. You don't need Analytics for this game, but it's harmless to leave it on. Either way is fine:
-
-Just click the blue Create project button to continue. (If you'd rather skip Analytics, there's usually a toggle on the previous screen to turn it off — but it's not worth backtracking for; leaving it as-is works perfectly.)
-
-Wait for it to finish provisioning (~30 seconds), then click Continue when it lands on the project dashboard.
-
-The important step comes next: in the left sidebar, open Build → Realtime Database → Create Database (make sure it's Realtime Database, not Firestore), pick a location, and start in test mode. That's what generates the databaseURL the app needs. Show me the next screen when you get there and I'll keep you on track.
-
-14 minutes ago
-Uploaded image
-wheres is build
-
-13 minutes ago
-
-Thought process
-Thought process
-The console's been reorganized — there's no "Build" menu in this version. Realtime Database now lives under Databases & Storage in the left sidebar.
-
-Click Databases & Storage (in the Product categories list on the left), then look for Realtime Database → Create Database. Make sure you pick Realtime Database, not Firestore (Cloud Firestore) — they're listed near each other and the app needs Realtime specifically.
-
-When the dialog comes up: pick a location (any nearby region is fine), then choose Start in test mode → Enable. That creates the database and gives you the databaseURL. Show me the screen once it's set up.
-
-13 minutes ago
-Uploaded image
-12 minutes ago
-
-Thought process
-Thought process
-Click the Start in test mode radio button (currently it's on "locked mode," which blocks all reads/writes and the game wouldn't work). Then click the blue Enable button.
-
-We'll replace those open test rules with the proper scoped rules from your SETUP.md right after — but test mode lets you confirm the game works first.
-
-Once it finishes creating, you'll land on the database data view. The next thing I need is your config keys: go to Settings (gear icon) → Project settings → General, scroll to Your apps, and click the </> (Web) icon to register a web app. That screen will show the firebaseConfig values to paste into index.html.
-
-12 minutes ago
-Uploaded image
-its just spinning
-
-6 minutes ago
-
-Thought process
-Thought process
-That's normal — it's provisioning the database, which takes anywhere from a few seconds up to about a minute. Just give it a moment.
-
-If it's still spinning after ~60 seconds, refresh the page (F5). The database will usually have been created anyway, and you'll see the data view with a URL like https://buzzword-bingo-ff4ca-default-rtdb.firebaseio.com/. Let me know once it loads.
-
-6 minutes ago
-Uploaded image
-I had to  refresh now what
-
-5 minutes ago
-
-Thought process
-Thought process
-The database is live — I can see its URL (https://buzzword-bingo-ff4ca-default-rtdb.firebaseio.com) and it's empty (null), which is exactly right. You can close that little "Why did you start..." survey popup in the corner with its X.
-
-Now get your config keys:
-
-Click the gear/Settings icon (top of the left sidebar) → Project settings.
-On the General tab, scroll down to Your apps.
-Click the </> (Web) icon to register a web app.
-Give it any nickname (e.g. bingo), leave "Firebase Hosting" unchecked, and click Register app.
-It'll show a code block with const firebaseConfig = { ... }.
-When you see that config block, paste the whole thing here (or screenshot it) and I'll tell you exactly where it goes in index.html — or I can drop the finished values in for you. Those are publishable keys, so it's fine to share them with me.
-
-5 minutes ago
-Uploaded image
-5 minutes ago
-The Settings menu is open. Click General (the top item in that menu).
-
-That takes you to the project's General settings page. Scroll down to the Your apps section and click the </> (Web) icon to register a web app — then you'll get the config block.
-
-4 minutes ago
-Uploaded image
-ok now what
-
-4 minutes ago
-You're on the right screen. Type a nickname in the App nickname box — anything works, e.g. bingo. Leave the "Also set up Firebase Hosting" checkbox unchecked (you're using GitHub Pages, not Firebase Hosting). Then click Register app.
-
-Step 2 ("Add Firebase SDK") will then show a code block containing const firebaseConfig = { apiKey: "...", ... }. Screenshot or paste that whole block here and I'll wire it into index.html for you.
-
-4 minutes ago
-is this free btw?
-
-4 minutes ago
-
-Thought process
-Thought process
-Yes. Your project is on the Spark plan — "$0/month," shown at the bottom-left of the Firebase console — and it requires no credit card. It won't bill you or auto-upgrade; if you ever hit a limit, the database just stops serving until the next day rather than charging you.
-
-The free Realtime Database limits are roughly 1 GB stored, 10 GB/month downloaded, and 100 simultaneous connections. A 15-player buzzword bingo game uses a microscopic fraction of that — you'd have to run it nonstop for years to get close.
-
-GitHub Pages is free too (on public repos). So the whole thing costs nothing.
-
-Go ahead and register the app, then paste me the config block.
-
-4 minutes ago
-Uploaded image
-okay good?
-
-3 minutes ago
-Looks good — nickname "BVIDTASHABINGO" is fine (it's just a label, doesn't affect anything). Hosting checkbox is correctly left unchecked.
-
-Click the blue Register app button. Step 2 will then show the firebaseConfig code block — paste that here and I'll slot it into index.html.
-
-3 minutes ago
-Uploaded image
-3 minutes ago
-
-Thought process
-Thought process
-Got everything I need. Wiring your real config into index.html now:
-
-
-Edited a file
-Edited a file
-3 minutes ago
-This thing?
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDbKRshWhEnxbdMpLLyzGuZVA2OKAH8XwA",
-  authDomain: "buzzword-bingo-ff4ca.firebaseapp.com",
-  databaseURL: "https://buzzword-bingo-ff4ca-default-rtdb.firebaseio.com",
-  projectId: "buzzword-bingo-ff4ca",
-  storageBucket: "buzzword-bingo-ff4ca.firebasestorage.app",
-  messagingSenderId: "735564029543",
-  appId: "1:735564029543:web:da92a291bf5061861e7ec2",
-  measurementId: "G-G8YFB14YPV"
-};
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-Show more
-3 minutes ago
-
-Thought process
-Thought process
-That's the one — and good news, I already grabbed those exact values from your last screenshot and wired them into index.html. They match perfectly. The only extra field here is measurementId, which is just for Google Analytics; the game doesn't use it, so it's safely left out.
-
-So you don't need to copy anything from this screen. Click Continue to console to close the dialog.
-
-Two steps left. First, let's set the database rules properly (test mode works but expires in 30 days):
-
-In the left sidebar, open Realtime Database, then click the Rules tab (top, next to "Data").
-Select all the text in the rules box, delete it, and paste this in:
-json
-{
-  "rules": {
-    "rooms": {
-      ".read": true,
-      "$code": {
-        ".read": true,
-        ".write": true
-      }
-    }
-  }
-}
-Click Publish.
-That scopes access to game rooms and won't expire. Show me the Rules screen after you publish, and then we'll head to GitHub to upload the file and turn on Pages.
-
-The updated app file is saved and ready in your folder:
-
-
-Read a file
-Read a file
-Once those rules are published, the Firebase side is fully done — then it's just uploading index.html to a GitHub repo and flipping on Pages.
-
-
-C:\Users\natas\Claude\Projects\Blizzard Video\index.html
-Code 
-2 minutes ago
-
-Keep going in Claude Code
-
-Switch to Claude Code and let Claude work directly in your repo, running and testing as it goes.
-
-Claude Fable 5 is currently unavailable.
-Learn more(opens in new tab)
-
-
-
-Claude is AI and can make mistakes. Please double-check responses. Give us feedback
-
-
-Index · HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Buzzword Bingo</title>
- 
-<!-- React + Babel (so the JSX below runs straight from this file, no build step) -->
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
- 
-<!-- Firebase (compat build = plain globals, plays nicely with Babel-in-browser) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
- 
 <style>
   :root {
     --paper: #f3efe4;
@@ -1006,6 +27,7 @@ Index · HTML
   }
   .wrap { max-width: 720px; margin: 0 auto; }
   .mono { font-family: 'Courier New', Courier, monospace; }
+
   /* ---- Memo header ---- */
   .memo-head {
     border-bottom: 3px double var(--ink);
@@ -1034,6 +56,7 @@ Index · HTML
     max-width: 46ch;
     line-height: 1.5;
   }
+
   /* ---- Cards / panels ---- */
   .panel {
     background: #fff;
@@ -1052,6 +75,7 @@ Index · HTML
     font-family: 'Courier New', monospace;
   }
   .panel p.hint { font-size: 13px; color: #6b6555; margin-bottom: 16px; line-height: 1.5; }
+
   label.field { display:block; font-size: 12px; letter-spacing:0.08em; text-transform:uppercase; color:#7a7363; margin: 0 0 6px; }
   input.text, textarea.text {
     width: 100%;
@@ -1071,6 +95,7 @@ Index · HTML
   textarea.text { resize: vertical; min-height: 150px; line-height: 1.6; }
   .row { display:flex; gap: 12px; flex-wrap: wrap; }
   .row > * { flex: 1; min-width: 140px; }
+
   button.btn {
     font: inherit; font-weight: 700;
     cursor: pointer;
@@ -1091,7 +116,9 @@ Index · HTML
   button.btn.gold:hover { background: #b97c24; }
   button.btn.small { padding: 8px 14px; font-size: 13px; }
   button.btn:disabled { opacity: .4; cursor: not-allowed; transform:none; }
+
   .divider-or { text-align:center; color:#9a917d; font-size:12px; letter-spacing:0.25em; margin: 14px 0; text-transform:uppercase; }
+
   .tabs { display:flex; gap:8px; margin-bottom: 18px; }
   .tab {
     flex:1; text-align:center; padding: 12px; cursor:pointer;
@@ -1101,6 +128,7 @@ Index · HTML
     border: 1px solid var(--line); border-bottom: none;
   }
   .tab.active { background:#fff; color: var(--ink); box-shadow: 0 -2px 0 var(--gold); }
+
   /* ---- Room bar ---- */
   .roombar {
     display:flex; align-items:center; gap:14px; flex-wrap:wrap;
@@ -1120,6 +148,7 @@ Index · HTML
     background: rgba(255,255,255,0.12); color:#fff; padding:7px 12px; border-radius:3px;
   }
   .copybtn:hover { background: rgba(255,255,255,0.22); }
+
   /* ---- Bingo board ---- */
   .board-frame {
     background: var(--teal-deep);
@@ -1165,7 +194,9 @@ Index · HTML
   .cell.free.marked::after { border-color: var(--gold); }
   .cell.win { animation: pop .4s ease; box-shadow: inset 0 0 0 3px var(--gold); }
   @keyframes pop { 0%{transform:scale(1);} 50%{transform:scale(1.08);} 100%{transform:scale(1);} }
+
   .cell-txt { position:relative; z-index:1; }
+
   /* ---- Win banner ---- */
   .banner {
     background: var(--stamp); color: #fff; text-align:center;
@@ -1174,6 +205,7 @@ Index · HTML
     border: 2px dashed rgba(255,255,255,0.5);
   }
   .banner small { display:block; font-weight:500; letter-spacing:0.02em; font-size:13px; opacity:.9; margin-top:4px; }
+
   /* ---- Players / activity ---- */
   .players { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
   .pchip {
@@ -1183,12 +215,15 @@ Index · HTML
   .pchip .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); }
   .pchip.bingo { background: var(--gold-tint); border-color: var(--gold); font-weight:700; }
   .pchip.bingo .dot { background: var(--stamp); }
+
   .feed { margin-top:8px; max-height: 220px; overflow:auto; }
   .feed-item { font-size:13px; padding:8px 0; border-bottom:1px dashed var(--line); display:flex; gap:10px; }
   .feed-item .ts { font-family:'Courier New',monospace; color:#a59c87; font-size:11px; white-space:nowrap; }
   .feed-item b { color: var(--teal-deep); }
   .feed-empty { font-size:13px; color:#9a917d; padding: 12px 0; }
+
   .footnote { text-align:center; font-size:11px; color:#a59c87; margin-top:28px; letter-spacing:0.04em; }
+
   .err { color: var(--stamp); font-size:13px; margin-top:8px; }
   .toast {
     position: fixed; bottom: 24px; left:50%; transform:translateX(-50%);
@@ -1197,7 +232,9 @@ Index · HTML
     animation: rise .3s ease;
   }
   @keyframes rise { from{opacity:0; transform:translate(-50%,12px);} to{opacity:1;transform:translate(-50%,0);} }
+
   .small-link { background:none; border:none; color:var(--teal); font:inherit; font-size:13px; cursor:pointer; text-decoration:underline; padding:0; }
+
   .modal-bg {
     position: fixed; inset: 0; z-index: 60;
     background: rgba(26,46,53,0.55);
@@ -1215,7 +252,7 @@ Index · HTML
     color: var(--teal); margin-bottom: 4px; font-family:'Courier New',monospace;
   }
   .modal .hint { font-size:13px; color:#6b6555; margin-bottom:16px; line-height:1.5; }
-  code.inline { background:var(--teal-tint); padding:1px 6px; border-radius:3px; font-family:'Courier New',monospace; font-size:12px; }
+
   @media (max-width:480px){
     .roombar .meta { display:none; }
     .panel { padding:16px; }
@@ -1224,81 +261,28 @@ Index · HTML
     *, .cell.win { animation:none !important; transition:none !important; }
   }
 </style>
-</head>
-<body>
-<div id="root"></div>
- 
+
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
- 
-/* =====================================================================
-   FIREBASE CONFIG  —  PASTE YOUR VALUES HERE
-   ---------------------------------------------------------------------
-   In the Firebase console: Project settings (gear icon) > "Your apps" >
-   register a Web app > copy the firebaseConfig object it shows you.
-   IMPORTANT: you must have created a *Realtime Database* (not Firestore)
-   so that "databaseURL" exists. If databaseURL is missing from the
-   snippet, create the Realtime Database first, then re-copy the config.
-   It's safe for these values to be public — that's how Firebase web works.
-   Access is controlled by the database security rules, not by hiding keys.
-   ===================================================================== */
-const firebaseConfig = {
-  apiKey:            "AIzaSyDbKRshWhEnxbdMpLLyzGuZVA2OKAH8XwA",
-  authDomain:        "buzzword-bingo-ff4ca.firebaseapp.com",
-  databaseURL:       "https://buzzword-bingo-ff4ca-default-rtdb.firebaseio.com",
-  projectId:         "buzzword-bingo-ff4ca",
-  storageBucket:     "buzzword-bingo-ff4ca.firebasestorage.app",
-  messagingSenderId: "735564029543",
-  appId:             "1:735564029543:web:da92a291bf5061861e7ec2"
-};
- 
-// Has the config actually been filled in yet?
-const NEEDS_CONFIG = Object.values(firebaseConfig)
-  .some(v => typeof v === "string" && v.indexOf("PASTE_") === 0);
- 
-let db = null;
-if (!NEEDS_CONFIG) {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-}
- 
-/* ----------------------- storage layer (Firebase RTDB) -----------------------
-   This replaces the old window.storage get/set calls. Each room lives at
-   /rooms/<CODE>. We use targeted writes (per-player, per-field) and a feed
-   that is push()-ed rather than rewritten wholesale, so two people acting at
-   the same moment don't overwrite each other's changes. */
-function roomRef(code){ return db.ref('rooms/' + code); }
- 
+
+/* ----------------------- storage helpers ----------------------- */
+const SHARED = true;
 async function loadRoom(code){
-  try {
-    const snap = await roomRef(code).get();
-    return snap.exists() ? snap.val() : null;
-  } catch(e){ return null; }
+  try { const r = await window.storage.get('room:'+code, SHARED); return r ? JSON.parse(r.value) : null; }
+  catch(e){ return null; }
 }
 async function saveRoom(code, data){
-  try { await roomRef(code).set(data); return true; }
+  try { await window.storage.set('room:'+code, JSON.stringify(data), SHARED); return true; }
   catch(e){ return false; }
 }
-// Append one activity-feed entry. ts is used purely for ordering.
-function pushFeed(code, who, msg){
-  return roomRef(code).child('feed').push({ t: now(), who: who, msg: msg, ts: Date.now() });
-}
- 
+
 /* ----------------------- utilities ----------------------- */
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function makeCode(){ let s=""; for(let i=0;i<4;i++) s+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]; return s; }
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function shuffle(a){ const x=a.slice(); for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
 function now(){ return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
- 
-// RTDB returns arrays as arrays when keys are contiguous, but normalize anyway.
-function asList(v){ return Array.isArray(v) ? v : (v ? Object.values(v) : []); }
-// Feed is stored as a push()-keyed object; render newest-first, capped at 40.
-function feedArray(room){
-  if(!room || !room.feed) return [];
-  return Object.values(room.feed).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,40);
-}
- 
+
 const DEFAULT_PHRASES = [
 `"Let's take this offline"
 "Circle back"
@@ -1336,7 +320,7 @@ const DEFAULT_PHRASES = [
 "Wearing many hats"
 "Give 110%"`
 ];
- 
+
 // Win detection (5x5, center = index 12 free)
 function lines(){
   const L=[];
@@ -1350,28 +334,7 @@ function checkWin(marked){
   for(const ln of LINES){ if(ln.every(i=>marked[i])) return ln; }
   return null;
 }
- 
-/* ----------------------- Setup notice (shown until config pasted) ----------------------- */
-function SetupNotice(){
-  return (
-    <div className="wrap">
-      <div className="memo-head">
-        <div className="eyebrow">Interoffice Memo · Re: Setup</div>
-        <h1 className="memo-title">Almost <em>there</em></h1>
-        <p className="memo-sub">The game is wired up for Firebase, it just needs your project's keys before rooms can sync.</p>
-      </div>
-      <div className="panel">
-        <h2>One step left</h2>
-        <p className="hint">Open <code className="inline">index.html</code> and paste your Firebase web-app config into the
-          <code className="inline">firebaseConfig</code> block near the top of the script. Make sure you've created a
-          <b> Realtime Database</b> so a <code className="inline">databaseURL</code> exists. Save, refresh, and this notice disappears.</p>
-        <p className="hint" style={{marginBottom:0}}>Full walkthrough is in <code className="inline">SETUP.md</code> next to this file.</p>
-      </div>
-      <div className="footnote">These keys are meant to ship in the page — Firebase security rules are what protect the data.</div>
-    </div>
-  );
-}
- 
+
 /* ----------------------- App ----------------------- */
 function App(){
   const [view, setView] = useState('lobby'); // lobby | game
@@ -1381,6 +344,7 @@ function App(){
   const [phrasesText, setPhrasesText] = useState(DEFAULT_PHRASES[0]);
   const [roomTitle, setRoomTitle] = useState('Monday All-Hands Bingo');
   const [err, setErr] = useState('');
+
   const [code, setCode] = useState(null);
   const [meId] = useState(uid());
   const [room, setRoom] = useState(null);
@@ -1394,12 +358,14 @@ function App(){
   const [editTitle, setEditTitle] = useState('');
   const [editErr, setEditErr] = useState('');
   const seenRound = useRef(0);
-  const roomRefLive = useRef(null);
+
+  const pollRef = useRef(null);
+
   const showToast = (m) => { setToast(m); setTimeout(()=>setToast(''), 1800); };
- 
+
   /* ---- build a personal card from room phrases ---- */
   function buildCard(phrases){
-    const pool = asList(phrases).filter(p=>p && p.trim().length);
+    const pool = phrases.filter(p=>p.trim().length);
     const picked = shuffle(pool).slice(0,24);
     const cells = [];
     for(let i=0;i<25;i++){
@@ -1408,7 +374,7 @@ function App(){
     }
     return cells;
   }
- 
+
   /* ---- create room (host) ---- */
   async function hostCreate(){
     setErr('');
@@ -1421,17 +387,16 @@ function App(){
     const data = {
       code: c, title: roomTitle.trim() || 'Buzzword Bingo',
       phrases, hostId: meId, createdAt: Date.now(), round: 1,
-      players: { [meId]: { name: name.trim(), joined: Date.now(), bingoAt: null } }
+      players: { [meId]: { name: name.trim(), joined: Date.now(), bingoAt: null } },
+      feed: [{ t: now(), who: name.trim(), msg: 'started the meeting 📋' }]
     };
-    const ok = await saveRoom(c, data);
-    if(!ok){ setErr('Could not reach the database — check your Firebase config and rules.'); return; }
-    await pushFeed(c, name.trim(), 'started the meeting 📋');
+    await saveRoom(c, data);
     setCode(c); setRoom(data);
     seenRound.current = 1;
     setMyCells(buildCard(phrases)); setMyMarks({12:true});
     setView('game');
   }
- 
+
   /* ---- join room ---- */
   async function doJoin(){
     setErr('');
@@ -1440,35 +405,36 @@ function App(){
     if(c.length !== 4){ setErr('Room codes are 4 characters.'); return; }
     const data = await loadRoom(c);
     if(!data){ setErr('No room with that code. Check with your host.'); return; }
-    // targeted write: only my own player record, so I don't clobber anyone else
-    await roomRef(c).child('players/'+meId).set({ name: name.trim(), joined: Date.now(), bingoAt: null });
-    await pushFeed(c, name.trim(), 'joined the call 👋');
+    data.players[meId] = { name: name.trim(), joined: Date.now(), bingoAt: null };
+    data.feed = [{ t: now(), who: name.trim(), msg: 'joined the call 👋' }, ...(data.feed||[])].slice(0,40);
+    await saveRoom(c, data);
     setCode(c); setRoom(data);
     seenRound.current = data.round || 1;
     setMyCells(buildCard(data.phrases)); setMyMarks({12:true});
     setView('game');
   }
- 
-  /* ---- live updates via Realtime Database listener (replaces polling) ---- */
+
+  /* ---- polling for live updates ---- */
   useEffect(()=>{
     if(view!=='game' || !code) return;
-    const ref = roomRef(code);
-    const cb = ref.on('value', (snap)=>{
-      const data = snap.val();
-      if(!data) return; // room gone
-      setRoom(data);
-      const r = data.round || 1;
-      if(r > seenRound.current){
-        seenRound.current = r;
-        setMyCells(buildCard(data.phrases));
-        setMyMarks({12:true}); setDidWin(false); setWinLine(null);
-        showToast('Host started a new round — fresh card dealt');
+    const tick = async ()=>{
+      const data = await loadRoom(code);
+      if(data){
+        setRoom(data);
+        const r = data.round || 1;
+        if(r > seenRound.current){
+          seenRound.current = r;
+          setMyCells(buildCard(data.phrases));
+          setMyMarks({12:true}); setDidWin(false); setWinLine(null);
+          showToast('Host started a new round — fresh card dealt');
+        }
       }
-    });
-    roomRefLive.current = { ref, cb };
-    return ()=>{ ref.off('value', cb); };
+    };
+    tick();
+    pollRef.current = setInterval(tick, 2500);
+    return ()=> clearInterval(pollRef.current);
   }, [view, code]);
- 
+
   /* ---- toggle a cell ---- */
   function toggleCell(i){
     if(i===12) return;
@@ -1478,7 +444,7 @@ function App(){
       return next;
     });
   }
- 
+
   /* ---- detect win locally, announce to room ---- */
   useEffect(()=>{
     if(!myCells) return;
@@ -1490,75 +456,75 @@ function App(){
     }
     if(!ln && didWin){ setDidWin(false); setWinLine(null); }
   }, [myMarks, myCells]);
- 
+
   async function announceBingo(){
-    if(!code) return;
-    // Transaction: set bingoAt only if it isn't already set. Returning undefined
-    // aborts, so committed===true means *we* recorded the bingo (no double-posts).
-    const ref = roomRef(code).child('players/'+meId+'/bingoAt');
-    let res;
-    try { res = await ref.transaction(cur => cur ? undefined : Date.now()); }
-    catch(e){ return; }
-    if(!res || !res.committed) return;
-    // compute placing from a fresh read
-    const snap = await roomRef(code).child('players').get();
-    const players = snap.val() || {};
-    const place = Object.values(players).filter(p=>p && p.bingoAt).length;
-    const myName = (players[meId] && players[meId].name) || name.trim() || 'Someone';
-    await pushFeed(code, myName, place===1 ? 'GOT BINGO FIRST 🏆' : `got bingo (#${place})`);
+    const data = await loadRoom(code);
+    if(!data) return;
+    if(data.players[meId] && !data.players[meId].bingoAt){
+      data.players[meId].bingoAt = Date.now();
+      const place = Object.values(data.players).filter(p=>p.bingoAt).length;
+      data.feed = [{ t: now(), who: data.players[meId].name, msg: place===1 ? 'GOT BINGO FIRST 🏆' : `got bingo (#${place})` }, ...(data.feed||[])].slice(0,40);
+      await saveRoom(code, data);
+      setRoom(data);
+    }
   }
- 
+
   async function leave(){
-    if(roomRefLive.current){ roomRefLive.current.ref.off('value', roomRefLive.current.cb); }
-    const nm = (room && room.players && room.players[meId] && room.players[meId].name) || name.trim() || 'Someone';
-    if(code){
-      await roomRef(code).child('players/'+meId).remove();
-      await pushFeed(code, nm, 'left the meeting 🚪');
+    clearInterval(pollRef.current);
+    const data = await loadRoom(code);
+    if(data && data.players[meId]){
+      const nm = data.players[meId].name;
+      delete data.players[meId];
+      data.feed = [{ t: now(), who: nm, msg: 'left the meeting 🚪' }, ...(data.feed||[])].slice(0,40);
+      await saveRoom(code, data);
     }
     setView('lobby'); setCode(null); setRoom(null); setMyCells(null); setMyMarks({}); setDidWin(false);
   }
- 
+
   async function newCard(){
     if(!room) return;
     setMyCells(buildCard(room.phrases)); setMyMarks({12:true}); setDidWin(false); setWinLine(null);
-    // clear my bingoAt so a fresh card can win again
-    if(code){ await roomRef(code).child('players/'+meId+'/bingoAt').set(null); }
+    // also clear my bingoAt so a fresh card can win again
+    const data = await loadRoom(code);
+    if(data && data.players[meId]){ data.players[meId].bingoAt = null; await saveRoom(code, data); setRoom(data); }
     showToast('Fresh card dealt');
   }
- 
+
   function openEditor(){
     if(!room) return;
-    setEditText(asList(room.phrases).join('\n'));
+    setEditText(room.phrases.join('\n'));
     setEditTitle(room.title);
     setEditErr('');
     setShowEdit(true);
   }
- 
+
   async function saveNewBoard(){
     setEditErr('');
     const phrases = editText.split('\n').map(s=>s.trim().replace(/^["']|["']$/g,'')).filter(Boolean);
     if(phrases.length < 24){ setEditErr(`Need at least 24 phrases — you have ${phrases.length}.`); return; }
-    if(!code || !room){ setEditErr('Lost the room. Try rejoining.'); return; }
-    const round = (room.round || 1) + 1;
-    // one atomic multi-path update: new board + reset every player's bingo for the round
-    const updates = { phrases: phrases, title: editTitle.trim() || room.title, round: round };
-    Object.keys(room.players || {}).forEach(id=>{ updates['players/'+id+'/bingoAt'] = null; });
-    await roomRef(code).update(updates);
-    const myName = (room.players[meId] && room.players[meId].name) || 'Host';
-    await pushFeed(code, myName, `revised the board — round ${round} 🔄`);
-    // re-deal my own card immediately (listener will sync everyone else)
-    seenRound.current = round;
+    const data = await loadRoom(code);
+    if(!data){ setEditErr('Lost the room. Try rejoining.'); return; }
+    data.phrases = phrases;
+    data.title = editTitle.trim() || data.title;
+    data.round = (data.round || 1) + 1;
+    // reset everyone's bingo status for the new round
+    Object.keys(data.players).forEach(id=>{ data.players[id].bingoAt = null; });
+    data.feed = [{ t: now(), who: data.players[meId]?.name || 'Host', msg: `revised the board — round ${data.round} 🔄` }, ...(data.feed||[])].slice(0,40);
+    await saveRoom(code, data);
+    setRoom(data);
+    // re-deal my own card immediately
+    seenRound.current = data.round;
     setMyCells(buildCard(phrases)); setMyMarks({12:true}); setDidWin(false); setWinLine(null);
     setShowEdit(false);
     showToast('New board sent to everyone');
   }
- 
+
   function copyCode(){
     const t = code;
     if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>showToast('Room code copied')); }
     else showToast('Code: '+t);
   }
- 
+
   /* =================== RENDER =================== */
   if(view==='lobby'){
     return (
@@ -1568,14 +534,17 @@ function App(){
           <h1 className="memo-title">Buzzword <em>Bingo</em></h1>
           <p className="memo-sub">A live game for the next all-hands, stand-up, or town hall. Make a card of the phrases your coworkers can't stop saying, share the room code, and quietly compete while looking very engaged.</p>
         </div>
+
         <div className="tabs">
           <div className={"tab"+(tab==='join'?' active':'')} onClick={()=>{setTab('join');setErr('')}}>Join a Room</div>
           <div className={"tab"+(tab==='host'?' active':'')} onClick={()=>{setTab('host');setErr('')}}>Host a Room</div>
         </div>
+
         <div className="panel">
           <label className="field">Your name (or alias)</label>
           <input className="text" placeholder="e.g. Definitely Working" value={name} onChange={e=>setName(e.target.value)} maxLength={24}/>
         </div>
+
         {tab==='join' ? (
           <div className="panel">
             <h2>Have a code?</h2>
@@ -1605,17 +574,19 @@ function App(){
       </div>
     );
   }
- 
+
   /* ---- GAME VIEW ---- */
-  const players = room ? Object.entries(room.players || {}) : [];
+  const players = room ? Object.entries(room.players) : [];
   const winners = players.filter(([,p])=>p.bingoAt).sort((a,b)=>a[1].bingoAt-b[1].bingoAt);
-  const feed = feedArray(room);
+  const feed = room?.feed || [];
+
   return (
     <div className="wrap">
       <div className="memo-head" style={{marginBottom:16}}>
         <div className="eyebrow">Now in session</div>
         <h1 className="memo-title" style={{fontSize:'clamp(24px,5vw,34px)'}}>{room?.title || 'Buzzword Bingo'}</h1>
       </div>
+
       <div className="roombar">
         <div>
           <div style={{fontSize:10,letterSpacing:'0.25em',opacity:.7,textTransform:'uppercase'}}>Room</div>
@@ -1627,12 +598,14 @@ function App(){
         <button className="copybtn" onClick={copyCode}>Copy code</button>
         <button className="copybtn" onClick={leave}>Leave</button>
       </div>
+
       {didWin && (
         <div className="banner">
           BINGO — looking very engaged 🏆
           <small>{winners.length>1 ? `You're #${winners.findIndex(([id])=>id===meId)+1} to call it.` : 'First one to call it. Act surprised.'}</small>
         </div>
       )}
+
       <div className="board-frame">
         <div className="board">
           {myCells && myCells.map((txt,i)=>{
@@ -1651,12 +624,14 @@ function App(){
           })}
         </div>
       </div>
+
       <div style={{display:'flex',gap:10,marginTop:14,flexWrap:'wrap'}}>
         <button className="btn ghost small" onClick={newCard}>Deal me a new card</button>
         {room && room.hostId===meId && <button className="btn gold small" onClick={openEditor}>Edit the board</button>}
         <div style={{flex:1}}></div>
         <span style={{fontSize:12,color:'#9a917d',alignSelf:'center'}}>Tap a square when you hear it</span>
       </div>
+
       <div className="panel" style={{marginTop:18}}>
         <h2>In the room</h2>
         <div className="players">
@@ -1668,6 +643,7 @@ function App(){
           ))}
         </div>
       </div>
+
       <div className="panel">
         <h2>Meeting minutes</h2>
         <div className="feed">
@@ -1680,7 +656,9 @@ function App(){
           ))}
         </div>
       </div>
-      <div className="footnote">Live via Firebase · share code <b>{code}</b> to add players</div>
+
+      <div className="footnote">Updates every few seconds · share code <b>{code}</b> to add players</div>
+
       {showEdit && (
         <div className="modal-bg" onClick={(e)=>{ if(e.target.className==='modal-bg') setShowEdit(false); }}>
           <div className="modal">
@@ -1703,11 +681,6 @@ function App(){
     </div>
   );
 }
- 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  NEEDS_CONFIG ? <SetupNotice/> : <App/>
-);
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
-</body>
-</html>
- 
